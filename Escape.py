@@ -31,7 +31,7 @@ def refreshLevel(level, stdscr, path):
     stdscr.clear()
     printLevel(level, stdscr)
     # path debug
-    # printLevel(level, stdscr, path)
+    printLevel(level, stdscr, path)
     stdscr.refresh()
 
 def printLevel(level, stdscr, path = []):
@@ -41,8 +41,9 @@ def printLevel(level, stdscr, path = []):
     white = curses.color_pair(4)
     for i, row in enumerate(level):
         for j, value in enumerate(row):
-            if (i, j) in path:
-                stdscr.addstr(i, j * 2, "X", magenta)
+            if path != None: 
+                if (i, j) in path:
+                    stdscr.addstr(i, j * 2, "X", magenta)
             if value == "#":
                 stdscr.addstr(i, j * 2, value, white)
             elif value == "X":
