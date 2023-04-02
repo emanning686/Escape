@@ -113,7 +113,7 @@ def movePlayer(direction, level, player):
         level[oldrow][oldcol] = " "
         level[newrow][newcol] = player
     elif newPosChar == "X":
-        return "Escape"
+        return "escape"
 
     return True
 
@@ -140,7 +140,6 @@ def main(stdscr):
             refreshLevel(level, stdscr)
             while True:
                 key = stdscr.getch()
-                goodMove = False
                 if key == 259:
                     goodMove = movePlayer("up", level, player)
                 elif key == 258:
@@ -153,6 +152,8 @@ def main(stdscr):
                     continue
                 if goodMove == True:
                     break
+                if goodMove == "escape":
+                    win = True
 
             moveEnemy(level, path, enemy)
         
