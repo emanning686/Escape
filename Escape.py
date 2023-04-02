@@ -234,7 +234,7 @@ def main(stdscr):
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(5, curses.COLOR_RED, curses.COLOR_MAGENTA)
 
-    levelStart = 3
+    levelStart = 0
     levelIndex = levelStart
     enemiesList = ["!", "@"]
     player = "O"
