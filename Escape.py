@@ -1,9 +1,13 @@
+# escape, by Eric Manning
+# created Apr 2, 2023
+
 import curses
 from curses import wrapper
 import queue
 import copy
 import time
 
+# all the levels in order
 levels = [
     [
     ["#", "#", "#", "#", "#", "#", "#", "#"],
@@ -56,19 +60,20 @@ levels = [
     ["#", " ", " ", " ", " ", "#"],
     ["#", "#", "#", "#", "#", "#"]
     ],
-    [
-    ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-    ["#", " ", " ", " ", "O", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
-    ]
+    # [
+    # ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+    # ["#", " ", " ", " ", "O", " ", " ", " ", " ", " ", " ", "#"],
+    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    # ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    # ]
 ]
 
+# function to refresh the level using the screen config in printLevel
 def refreshLevel(level, stdscr, enemiesList, levelNum, moves, pathsList):
     stdscr.clear()
     printLevel(level, stdscr, enemiesList, levelNum, moves)
@@ -76,6 +81,7 @@ def refreshLevel(level, stdscr, enemiesList, levelNum, moves, pathsList):
     # printLevel(level, stdscr, enemiesList, levelNum, moves, pathsList)
     stdscr.refresh()
 
+# function to configure the screen, can show the bredth first search paths
 def printLevel(level, stdscr, enemiesList, levelNum, moves, pathsList = []):
     cyan = curses.color_pair(1)
     magenta = curses.color_pair(2)
@@ -103,6 +109,8 @@ def printLevel(level, stdscr, enemiesList, levelNum, moves, pathsList = []):
     stdscr.addstr(1, currentCol + 1, "level " + str(levelNum), blackwhite)
     stdscr.addstr(2, currentCol + 1, "total moves " + str(moves), blackwhite)
 
+# function to find the matrix location of a character, doesn't work with multiple, returns
+# none if none exist
 def findLocation(level, character):
     for i, row in enumerate(level):
         for j, value in enumerate(row):
@@ -110,6 +118,8 @@ def findLocation(level, character):
                 return i, j
     return None
 
+# function to find the fastest path from one point to another on the matrix grid, bredth
+# first search method
 def findPath(level, start, end, enemiesList):
     startPos = findLocation(level, start)
 
@@ -118,6 +128,7 @@ def findPath(level, start, end, enemiesList):
 
     visited = set()
 
+    # loops until all the neighbors and paths have been checked and returns the best path
     while not q.empty():
         currentPos, path = q.get()
         row, col = currentPos
@@ -142,6 +153,7 @@ def findPath(level, start, end, enemiesList):
             q.put((neighbor, newPath))
             visited.add(neighbor)
 
+# function to get all the valid neighbors for the breadth first search
 def findNeighbors(level, row, col):
     neighbors = []
 
@@ -156,6 +168,8 @@ def findNeighbors(level, row, col):
 
     return neighbors
 
+# function to swap the position of an enemy with the spot first on the breadth first
+# search path to the player
 def moveEnemy(level, path, enemy):
     oldrow, oldcol = findLocation(level, enemy)
     newrow, newcol = path[1]
@@ -163,6 +177,7 @@ def moveEnemy(level, path, enemy):
     level[oldrow][oldcol] = " "
     level[newrow][newcol] = enemy
 
+# function to move the play based on their input
 def movePlayer(direction, level, player):
     oldrow, oldcol = findLocation(level, player)
     if direction == "up" and oldrow > 0: # up
@@ -176,6 +191,8 @@ def movePlayer(direction, level, player):
     else:
         return False
 
+    # checks to make sure the spot the player is moving is not a wall and also returns
+    # "escape" if the player has reached the endpoint
     newPosChar = level[newrow][newcol]
     if newPosChar == " ":
         level[oldrow][oldcol] = " "
@@ -189,6 +206,7 @@ def movePlayer(direction, level, player):
 
     return True
 
+# function to check if the player character is in the matrix
 def checkLose(level, player):
     for row in level:
         for value in row:
@@ -196,15 +214,20 @@ def checkLose(level, player):
                 return False
     return True
 
+# function to display the window for if the player loses
 def loseWindow(stdscr):
     magenta = curses.color_pair(2)
     stdscr.clear()
-    stdscr.addstr(1, 6, "you lost!", magenta)
+    stdscr.addstr(1, 6, "you lossed!", magenta)
     stdscr.refresh()
     time.sleep(0.5)
     stdscr.addstr(2, 6, "press space to play again", magenta)
     stdscr.refresh()
+    time.sleep(0.5)
+    stdscr.addstr(3, 6, "or escape to quit", magenta)
+    stdscr.refresh()
 
+# function to display the window for if the player wins
 def winWindow(stdscr, movesList):
     magenta = curses.color_pair(2)
     stdscr.clear()
@@ -226,7 +249,12 @@ def winWindow(stdscr, movesList):
     time.sleep(0.5)
     stdscr.addstr(row, 6, "press space to play again", magenta)
     stdscr.refresh()
+    row += 1
+    time.sleep(0.5)
+    stdscr.addstr(row, 6, "or escape to quit", magenta)
+    stdscr.refresh()
 
+# main function
 def main(stdscr):
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
@@ -234,13 +262,19 @@ def main(stdscr):
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(5, curses.COLOR_RED, curses.COLOR_MAGENTA)
 
+    # variables that need to be initialized before the main loop
     levelStart = 0
     levelIndex = levelStart
     enemiesList = ["!", "@"]
     player = "O"
     movesList = []
+    endProgram = False
+
+    # main loop
     while True:
         moves = 0
+
+        # checks if there are any remaining levels, if not, displays the win window
         if levelIndex <= len(levels) - 1:
             level = copy.deepcopy(levels[levelIndex])
         else:
@@ -252,7 +286,14 @@ def main(stdscr):
                     levelIndex = levelStart
                     movesList = []
                     break
+                elif key == 27:
+                    endProgram = True
+                    break
+            if endProgram == True:
+                break
             continue
+
+        # level loop, loops until the level ends by loss or finish
         while True:
             pathsList = []
             for enemy in enemiesList:
@@ -260,18 +301,23 @@ def main(stdscr):
                     pathsList.append(findPath(level, enemy, player, enemiesList))
             refreshLevel(level, stdscr, enemiesList, levelIndex + 1, moves, pathsList)
 
-            lost = checkLose(level, player)
-            if lost:
+            # checks if the player has lost
+            lossed = checkLose(level, player)
+            if lossed:
                 time.sleep(1)
                 loseWindow(stdscr)
                 while True:
                     key = stdscr.getch()
                     if key == ord(" "):
                         levelIndex = levelStart
+                        movesList = []
                         break
                 break
             else:
+
+                # player input loop
                 while True:
+                    goodMove = None
                     key = stdscr.getch()
                     if key == curses.KEY_UP:
                         goodMove = movePlayer("up", level, player)
@@ -282,13 +328,15 @@ def main(stdscr):
                     elif key == curses.KEY_RIGHT:
                         goodMove = movePlayer("right", level, player)
                     elif key == 27:
-                        curses.echo() ; curses.nocbreak()
-                        curses.endwin()
+                        endProgram = True
                     else:
                         continue
 
                     if goodMove == False:
                         continue
+
+                    # what to do if the move is good, mainly just checks for every living
+                    # enemy and moves them before restarting the loop
                     elif goodMove == True:
                         LivingEnemies = []
                         for enemy in enemiesList:
@@ -304,7 +352,13 @@ def main(stdscr):
                         moves += 1
                         movesList.append(moves)
                         break
+                    if endProgram == True:
+                        break
                 if goodMove == "escape":
                     break
+                if endProgram == True:
+                    break
+        if endProgram == True:
+            break
 
 wrapper(main)
