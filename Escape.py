@@ -281,6 +281,9 @@ def main(stdscr):
                         goodMove = movePlayer("left", level, player)
                     elif key == curses.KEY_RIGHT:
                         goodMove = movePlayer("right", level, player)
+                    elif key == 27:
+                        curses.echo() ; curses.nocbreak()
+                        curses.endwin()
                     else:
                         continue
 
