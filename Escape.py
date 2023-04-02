@@ -22,60 +22,95 @@ levels = [
     ["#", " ", " ", " ", "!", " ", " ", "#"],
     ["#", " ", " ", "#", "#", "#", " ", "#"],
     ["#", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", "#"],
     ["#", "#", "#", "#", "#", "#", "#", "#"]
     ],
     [
-    ["#", "#", "#", "#", "#"],
-    ["#", " ", "O", " ", "X"],
-    ["#", "!", " ", " ", "#"],
-    ["#", "#", "#", "#", "#"]
+    ["#", "#", "#", "#", "#", "#"],
+    ["#", " ", " ", " ", "O", "#"],
+    ["#", " ", "#", "#", " ", "#"],
+    ["#", " ", " ", "#", " ", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", " ", "#", "!", " ", "#"],
+    ["#", " ", "#", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", " ", "@", " ", "#", "#"],
+    ["#", "#", "#", " ", " ", "#"],
+    ["#", "X", "#", " ", "#", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", "#", "#", "#", "#", "#"]
     ],
     [
-    ["#", "#", "#", "#", "#"],
-    ["#", " ", " ", "!", "#"],
-    ["X", " ", "O", " ", "#"],
-    ["#", "#", "#", "#", "#"]
+    ["#", "#", "#", "#", "#", "#"],
+    ["#", " ", " ", " ", "X", "#"],
+    ["#", " ", "#", "#", " ", "#"],
+    ["#", " ", " ", "#", " ", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", " ", "#", "!", " ", "#"],
+    ["#", " ", "#", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", " ", "@", " ", "#", "#"],
+    ["#", "#", "#", " ", " ", "#"],
+    ["#", "O", "#", " ", "#", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", "#", "#", "#", "#", "#"]
+    ],
+    [
+    ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+    ["#", " ", " ", " ", "O", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     ]
 ]
 
-def refreshLevel(level, stdscr, levelNum, moves, path):
+def refreshLevel(level, stdscr, enemiesList, levelNum, moves, pathsList):
     stdscr.clear()
-    printLevel(level, stdscr, levelNum, moves)
+    printLevel(level, stdscr, enemiesList, levelNum, moves)
     # path debug
-    # printLevel(level, stdscr, levelNum, moves, path)
+    # printLevel(level, stdscr, enemiesList, levelNum, moves, pathsList)
     stdscr.refresh()
 
-def printLevel(level, stdscr, levelNum, moves, path = []):
+def printLevel(level, stdscr, enemiesList, levelNum, moves, pathsList = []):
     cyan = curses.color_pair(1)
     magenta = curses.color_pair(2)
-    red = curses.color_pair(3)
-    white = curses.color_pair(4)
+    blackred = curses.color_pair(3)
+    blackwhite = curses.color_pair(4)
+    redmagenta = curses.color_pair(5)
     for i, row in enumerate(level):
         for j, value in enumerate(row):
             iPrintPos, jPrintPos = i + 1, (j + 1) * 2
-            if path != None: 
-                if (i, j) in path:
-                    stdscr.addstr(iPrintPos, jPrintPos, "X", magenta)
+            if pathsList != None: 
+                for path in pathsList:
+                    if path != None:
+                        if (i, j) in path:
+                            stdscr.addstr(iPrintPos, jPrintPos, "&", redmagenta)
             if value == "#":
-                stdscr.addstr(iPrintPos, jPrintPos, value, white)
+                stdscr.addstr(iPrintPos, jPrintPos, value, blackwhite)
             elif value == "X":
-                stdscr.addstr(iPrintPos, jPrintPos, value, red)
+                stdscr.addstr(iPrintPos, jPrintPos, value, blackred)
             elif value == "O":
                 stdscr.addstr(iPrintPos, jPrintPos, value, cyan)
-            elif value == "!":
-                stdscr.addstr(iPrintPos, jPrintPos, value, magenta)
+            for enemy in enemiesList:
+                if value == enemy:
+                    stdscr.addstr(iPrintPos, jPrintPos, value, magenta)
     currentCol = len(level[0]) * 2 + 1
-    stdscr.addstr(1, currentCol + 1, "level " + str(levelNum), white)
-    stdscr.addstr(2, currentCol + 1, "total moves " + str(moves), white)
+    stdscr.addstr(1, currentCol + 1, "level " + str(levelNum), blackwhite)
+    stdscr.addstr(2, currentCol + 1, "total moves " + str(moves), blackwhite)
 
 def findLocation(level, character):
     for i, row in enumerate(level):
         for j, value in enumerate(row):
             if value == character:
                 return i, j
+    return None
 
-def findPath(level, start, end):
+def findPath(level, start, end, enemiesList):
     startPos = findLocation(level, start)
 
     q = queue.Queue()
@@ -99,6 +134,9 @@ def findPath(level, start, end):
                 continue
             if level[r][c] == "X":
                 continue
+            for enemy in enemiesList:
+                if level[r][c] == enemy:
+                    continue
 
             newPath = path + [neighbor]
             q.put((neighbor, newPath))
@@ -121,7 +159,7 @@ def findNeighbors(level, row, col):
 def moveEnemy(level, path, enemy):
     oldrow, oldcol = findLocation(level, enemy)
     newrow, newcol = path[1]
-
+    
     level[oldrow][oldcol] = " "
     level[newrow][newcol] = enemy
 
@@ -143,6 +181,8 @@ def movePlayer(direction, level, player):
         level[oldrow][oldcol] = " "
         level[newrow][newcol] = player
     elif newPosChar == "X":
+        level[oldrow][oldcol] = " "
+        level[newrow][newcol] = player
         return "escape"
     elif newPosChar == "#":
         return False
@@ -160,6 +200,8 @@ def loseWindow(stdscr):
     magenta = curses.color_pair(2)
     stdscr.clear()
     stdscr.addstr(1, 6, "you lost!", magenta)
+    stdscr.refresh()
+    time.sleep(0.5)
     stdscr.addstr(2, 6, "press space to play again", magenta)
     stdscr.refresh()
 
@@ -190,9 +232,11 @@ def main(stdscr):
     curses.init_pair(2, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_RED)
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    curses.init_pair(5, curses.COLOR_RED, curses.COLOR_MAGENTA)
 
-    levelIndex = 0
-    enemy = "!"
+    levelStart = 3
+    levelIndex = levelStart
+    enemiesList = ["!", "@"]
     player = "O"
     movesList = []
     while True:
@@ -200,25 +244,30 @@ def main(stdscr):
         if levelIndex <= len(levels) - 1:
             level = copy.deepcopy(levels[levelIndex])
         else:
+            time.sleep(1)
             winWindow(stdscr, movesList)
             while True:
                 key = stdscr.getch()
                 if key == ord(" "):
-                    levelIndex = 0
+                    levelIndex = levelStart
                     movesList = []
                     break
             continue
         while True:
-            path = findPath(level, enemy, player)
-            refreshLevel(level, stdscr, levelIndex + 1, moves, path)
+            pathsList = []
+            for enemy in enemiesList:
+                if findLocation(level, enemy)!= None:
+                    pathsList.append(findPath(level, enemy, player, enemiesList))
+            refreshLevel(level, stdscr, enemiesList, levelIndex + 1, moves, pathsList)
 
             lost = checkLose(level, player)
             if lost:
+                time.sleep(1)
                 loseWindow(stdscr)
                 while True:
                     key = stdscr.getch()
                     if key == ord(" "):
-                        levelIndex = 0
+                        levelIndex = levelStart
                         break
                 break
             else:
@@ -238,7 +287,13 @@ def main(stdscr):
                     if goodMove == False:
                         continue
                     elif goodMove == True:
-                        moveEnemy(level, path, enemy)
+                        LivingEnemies = []
+                        for enemy in enemiesList:
+                            isAlive = findLocation(level, enemy)
+                            if isAlive!= None:
+                                LivingEnemies.append(enemy)
+                        for i, enemy in enumerate(LivingEnemies):
+                            moveEnemy(level, pathsList[i], enemy)
                         moves += 1
                         break
                     elif goodMove == "escape":
