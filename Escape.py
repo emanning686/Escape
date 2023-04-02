@@ -2,19 +2,32 @@ import curses
 from curses import wrapper
 import queue
 import time
+import copy
 
-level = [
+levels = [
+    [
     ["#", "#", "#", "#", "#", "#", "#", "#"],
     ["#", " ", "X", " ", " ", "!", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", "#"],
-    ["#", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", "#", "#", "#", "#"],
+    ["#", " ", " ", " ", "#", " ", " ", "#"],
+    ["#", " ", " ", "#", "#", " ", " ", "#"],
     ["#", " ", " ", " ", " ", " ", " ", "#"],
     ["#", " ", " ", " ", "O", " ", " ", "#"],
     ["#", "#", "#", "#", "#", "#", "#", "#"]
+    ],
+    [
+    ["#", "#", "#", "#", "#", "#", "#", "#"],
+    ["#", " ", "O", "#", "X", " ", " ", "#"],
+    ["#", " ", " ", " ", "#", "#", " ", "#"],
+    ["#", " ", " ", " ", "!", " ", " ", "#"],
+    ["#", " ", " ", "#", "#", "#", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", "#", "#", "#", "#", "#", "#", "#"]
+    ]
 ]
 
-def refreshLevel(level, stdscr):
+def refreshLevel(level, stdscr, path):
     stdscr.clear()
     printLevel(level, stdscr)
     # path debug
@@ -114,12 +127,14 @@ def movePlayer(direction, level, player):
         level[newrow][newcol] = player
     elif newPosChar == "X":
         return "escape"
+    elif newPosChar == "#":
+        return False
 
     return True
 
 def checkLose(level, player):
-    for row in enumerate(level):
-        for value in enumerate(row):
+    for row in level:
+        for value in row:
             if value == player:
                 return False
     return True
@@ -129,34 +144,64 @@ def main(stdscr):
     curses.init_pair(2, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_RED)
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    
-    while True:
-        enemy = "!"
-        player = "O"
-        path = findPath(level, enemy, player)
+    magenta = curses.color_pair(2)
 
-        lost = checkLose(level, player)
-        if not lost:
-            refreshLevel(level, stdscr)
+    levelIndex = 0
+    enemy = "!"
+    player = "O"
+    while True:
+        if levelIndex <= len(levels) - 1:
+            level = copy.deepcopy(levels[levelIndex])
+        else:
+            stdscr.clear()
+            stdscr.addstr(3, 6, "you escaped the final room!", magenta)
+            stdscr.addstr(4, 6, "press space to play again", magenta)
+            stdscr.refresh()
             while True:
                 key = stdscr.getch()
-                if key == 259:
-                    goodMove = movePlayer("up", level, player)
-                elif key == 258:
-                    goodMove = movePlayer("down", level, player)
-                elif key == 260:
-                    goodMove = movePlayer("left", level, player)
-                elif key == 261:
-                    goodMove = movePlayer("right", level, player)
-                else:
-                    continue
-                if goodMove == True:
+                if key == ord(" "):
+                    levelIndex = 0
                     break
-                if goodMove == "escape":
-                    win = True
+            continue
+        while True:
+            path = findPath(level, enemy, player)
+            refreshLevel(level, stdscr, path)
 
-            moveEnemy(level, path, enemy)
-        
-    stdscr.getch()
+            lost = checkLose(level, player)
+            if lost:
+                stdscr.clear()
+                stdscr.addstr(3, 6, "you lost", magenta)
+                stdscr.addstr(4, 6, "press space to play again", magenta)
+                stdscr.refresh()
+                while True:
+                    key = stdscr.getch()
+                    if key == ord(" "):
+                        levelIndex = 0
+                        break
+                break
+            else:
+                while True:
+                    key = stdscr.getch()
+                    if key == curses.KEY_UP:
+                        goodMove = movePlayer("up", level, player)
+                    elif key == curses.KEY_DOWN:
+                        goodMove = movePlayer("down", level, player)
+                    elif key == curses.KEY_LEFT:
+                        goodMove = movePlayer("left", level, player)
+                    elif key == curses.KEY_RIGHT:
+                        goodMove = movePlayer("right", level, player)
+                    else:
+                        continue
+
+                    if goodMove == False:
+                        continue
+                    elif goodMove == True:
+                        moveEnemy(level, path, enemy)
+                        break
+                    elif goodMove == "escape":
+                        levelIndex += 1
+                        break
+                if goodMove == "escape":
+                    break
 
 wrapper(main)
