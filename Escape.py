@@ -6,6 +6,7 @@ from curses import wrapper
 import queue
 import copy
 import time
+from curses.textpad import rectangle
 
 # all the levels in order
 levels = [
@@ -60,34 +61,39 @@ levels = [
     ["#", " ", " ", " ", " ", "#"],
     ["#", "#", "#", "#", "#", "#"]
     ],
-    # [
-    # ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-    # ["#", " ", " ", " ", "O", " ", " ", " ", " ", " ", " ", "#"],
-    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    # ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
-    # ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
-    # ]
+    [
+    ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+    ["#", " ", " ", " ", "O", " ", " ", " ", "Z", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", "#", "#", "#", " ", "#"],
+    ["#", " ", " ", " ", " ", "#", " ", "#", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", "#", " ", " ", " ", " ", "#"],
+    ["#", " ", "#", " ", " ", " ", " ", " ", " ", " ", "X", "#"],
+    ["#", " ", " ", " ", " ", " ", "@", " ", " ", " ", " ", "#"],
+    ["#", "%", " ", " ", " ", " ", "#", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", "!", " ", "#", " ", " ", " ", " ", "#"],
+    ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    ]
 ]
 
 # function to refresh the level using the screen config in printLevel
-def refreshLevel(level, stdscr, enemiesList, levelNum, moves, pathsList):
+def refreshLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode, pathsList):
     stdscr.clear()
-    printLevel(level, stdscr, enemiesList, levelNum, moves)
+    printLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode)
     # path debug
-    # printLevel(level, stdscr, enemiesList, levelNum, moves, pathsList)
+    # printLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode, pathsList)
     stdscr.refresh()
 
 # function to configure the screen, can show the bredth first search paths
-def printLevel(level, stdscr, enemiesList, levelNum, moves, pathsList = []):
+def printLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode, pathsList = []):
     cyan = curses.color_pair(1)
     magenta = curses.color_pair(2)
     blackred = curses.color_pair(3)
     blackwhite = curses.color_pair(4)
     redmagenta = curses.color_pair(5)
+    white = curses.color_pair(6)
+    red = curses.color_pair(7)
+    topLeftFound = False
     for i, row in enumerate(level):
         for j, value in enumerate(row):
             iPrintPos, jPrintPos = i + 1, (j + 1) * 2
@@ -97,14 +103,22 @@ def printLevel(level, stdscr, enemiesList, levelNum, moves, pathsList = []):
                         if (i, j) in path:
                             stdscr.addstr(iPrintPos, jPrintPos, "&", redmagenta)
             if value == "#":
-                stdscr.addstr(iPrintPos, jPrintPos, value, blackwhite)
+                stdscr.addstr(iPrintPos, jPrintPos, "▧", white)
+                if topLeftFound == False:
+                    topLeftFound = True
+                    topLeftX, topLeftY = iPrintPos, jPrintPos
             elif value == "X":
-                stdscr.addstr(iPrintPos, jPrintPos, value, blackred)
+                stdscr.addstr(iPrintPos, jPrintPos, value, blackred | curses.A_BOLD)
             elif value == "O":
-                stdscr.addstr(iPrintPos, jPrintPos, value, cyan)
+                stdscr.addstr(iPrintPos, jPrintPos, value, cyan | curses.A_BOLD)
             for enemy in enemiesList:
                 if value == enemy:
-                    stdscr.addstr(iPrintPos, jPrintPos, value, magenta)
+                    stdscr.addstr(iPrintPos, jPrintPos, value, red | curses.A_BOLD)
+
+    if rectangleMode == True:
+        stdscr.attron(redmagenta)
+        rectangle(stdscr, topLeftX, topLeftY, len(level), len(level[0]) * 2)
+        stdscr.attroff(redmagenta)
     currentCol = len(level[0]) * 2 + 1
     stdscr.addstr(1, currentCol + 1, "level " + str(levelNum), blackwhite)
     stdscr.addstr(2, currentCol + 1, "total moves " + str(moves), blackwhite)
@@ -261,13 +275,16 @@ def main(stdscr):
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_RED)
     curses.init_pair(4, curses.COLOR_BLACK, curses.COLOR_WHITE)
     curses.init_pair(5, curses.COLOR_RED, curses.COLOR_MAGENTA)
+    curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(7, curses.COLOR_RED, curses.COLOR_BLACK)
 
     # variables that need to be initialized before the main loop
     levelStart = 0
     levelIndex = levelStart
-    enemiesList = ["!", "@"]
-    player = "O"
     movesList = []
+    rectangleMode = False
+    enemiesList = ["!", "@", "%", "Z"]
+    player = "O"
     endProgram = False
 
     # main loop
@@ -299,7 +316,7 @@ def main(stdscr):
             for enemy in enemiesList:
                 if findLocation(level, enemy)!= None:
                     pathsList.append(findPath(level, enemy, player, enemiesList))
-            refreshLevel(level, stdscr, enemiesList, levelIndex + 1, moves, pathsList)
+            refreshLevel(level, stdscr, enemiesList, levelIndex + 1, moves, rectangleMode, pathsList)
 
             # checks if the player has lost
             lossed = checkLose(level, player)
@@ -312,6 +329,10 @@ def main(stdscr):
                         levelIndex = levelStart
                         movesList = []
                         break
+                    elif key == 27:
+                        endProgram = True
+                        break
+                
                 break
             else:
 
@@ -327,6 +348,8 @@ def main(stdscr):
                         goodMove = movePlayer("left", level, player)
                     elif key == curses.KEY_RIGHT:
                         goodMove = movePlayer("right", level, player)
+                    elif key == 127:
+                        rectangleMode =  not rectangleMode
                     elif key == 27:
                         endProgram = True
                     else:
