@@ -73,6 +73,17 @@ levels = [
     ["#", "%", " ", " ", " ", " ", "#", " ", " ", " ", " ", "#"],
     ["#", " ", " ", " ", "!", " ", "#", " ", " ", " ", " ", "#"],
     ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    ],
+    [
+    ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
+    ["#", " ", " ", " ", " ", "!", " ", " ", "#", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", " ", " ", "#", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", "#", " ", "#", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", "#", " ", " ", "#", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", "#", "@", " ", " ", " ", "O", " ", " ", "#"],
+    ["#", " ", " ", " ", "X", "#", " ", "#", " ", " ", " ", " ", " ", "#"],
+    ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
     ]
 ]
 
@@ -270,6 +281,8 @@ def winWindow(stdscr, movesList):
 
 # main function
 def main(stdscr):
+
+    # color initialization
     curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
     curses.init_pair(2, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_RED)
@@ -277,9 +290,29 @@ def main(stdscr):
     curses.init_pair(5, curses.COLOR_RED, curses.COLOR_MAGENTA)
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.init_pair(7, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(8, curses.COLOR_WHITE, curses.COLOR_MAGENTA)
+
+    # title screen 
+    whitemagenta = curses.color_pair(8)
+    stdscr.clear()
+    stdscr.addstr(1, 6, "  ___  ___  ___ __ _ _ __   ___..", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(2, 6, " / _ \/ __|/ __/ _` | '_ \ / _ \ ", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(3, 6, "|  __/\__ \ (_| (_| | |_) |  __/.", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(4, 6, " \___||___/\___\__,_| .__/ \___|.", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(5, 6, "                    |_|         .", whitemagenta)
+    stdscr.refresh()
+    time.sleep(1)
 
     # variables that need to be initialized before the main loop
-    levelStart = 0
+    levelStart = 5
     levelIndex = levelStart
     movesList = []
     rectangleMode = False
