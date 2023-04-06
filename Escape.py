@@ -76,7 +76,7 @@ levels = [
     ],
     [
     ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"],
-    ["#", " ", " ", " ", " ", "!", " ", " ", "#", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", "%", " ", " ", "#", " ", " ", " ", " ", "#"],
     ["#", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "#"],
     ["#", " ", " ", " ", " ", " ", " ", " ", "#", " ", " ", " ", " ", "#"],
     ["#", " ", " ", " ", " ", " ", "#", " ", "#", " ", " ", " ", " ", "#"],
@@ -84,6 +84,44 @@ levels = [
     ["#", " ", " ", " ", " ", "#", "@", " ", " ", " ", "O", " ", " ", "#"],
     ["#", " ", " ", " ", "X", "#", " ", "#", " ", " ", " ", " ", " ", "#"],
     ["#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#", "#"]
+    ],
+    [
+    ["#", "#", "#", "#", "#", "#"],
+    ["#", "X", " ", " ", "%", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", " ", "#", " ", " ", "#"],
+    ["#", "#", " ", " ", " ", "#"],
+    ["#", "#", " ", "#", " ", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", "Z", " ", " ", "O", "#"],
+    ["#", "#", "#", "#", "#", "#"]
+    ],
+    [
+    ["#", "#", "#", "#", "#", "#"],
+    ["#", "O", " ", " ", "%", "#"],
+    ["#", " ", " ", "#", " ", "#"],
+    ["#", " ", "#", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", "#", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", "#"],
+    ["#", "Z", " ", " ", "X", "#"],
+    ["#", "#", "#", "#", "#", "#"]
+    ],
+    [
+    ["#", "#", "#", "#", "#", "#", "#"],
+    ["#", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", "#"],
+    ["#", "#", " ", " ", " ", " ", "#"],
+    ["#", " ", "#", " ", " ", " ", "#"],
+    ["#", " ", "!", " ", " ", " ", "#"],
+    ["#", "X", " ", "Z", "#", " ", "#"],
+    ["#", "#", "#", " ", "O", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", "#"],
+    ["#", " ", "#", "#", "#", " ", "#"],
+    ["#", " ", " ", "@", " ", " ", "#"],
+    ["#", " ", " ", " ", " ", " ", "#"],
+    ["#", "#", "#", "#", "#", "#", "#"]
     ]
 ]
 
@@ -131,8 +169,8 @@ def printLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode, paths
         rectangle(stdscr, topLeftX, topLeftY, len(level), len(level[0]) * 2)
         stdscr.attroff(redmagenta)
     currentCol = len(level[0]) * 2 + 1
-    stdscr.addstr(1, currentCol + 1, "level " + str(levelNum), blackwhite)
-    stdscr.addstr(2, currentCol + 1, "total moves " + str(moves), blackwhite)
+    stdscr.addstr(1, currentCol + 1, "level: " + str(levelNum), blackwhite)
+    stdscr.addstr(2, currentCol + 1, "moves: " + str(moves), blackwhite)
 
 # function to find the matrix location of a character, doesn't work with multiple, returns
 # none if none exist
@@ -196,10 +234,18 @@ def findNeighbors(level, row, col):
 # function to swap the position of an enemy with the spot first on the breadth first
 # search path to the player
 def moveEnemy(level, path, enemy):
-    oldrow, oldcol = findLocation(level, enemy)
+    oldrow, oldcol = 10000, 10000
+    try:
+        oldrow, oldcol = findLocation(level, enemy)
+    except TypeError:
+        pass
+
     newrow, newcol = path[1]
     
-    level[oldrow][oldcol] = " "
+    try:
+        level[oldrow][oldcol] = " "
+    except IndexError:
+        pass
     level[newrow][newcol] = enemy
 
 # function to move the play based on their input
@@ -312,7 +358,7 @@ def main(stdscr):
     time.sleep(1)
 
     # variables that need to be initialized before the main loop
-    levelStart = 5
+    levelStart = 0
     levelIndex = levelStart
     movesList = []
     rectangleMode = False
@@ -397,7 +443,7 @@ def main(stdscr):
                         LivingEnemies = []
                         for enemy in enemiesList:
                             isAlive = findLocation(level, enemy)
-                            if isAlive!= None:
+                            if isAlive != None:
                                 LivingEnemies.append(enemy)
                         for i, enemy in enumerate(LivingEnemies):
                             moveEnemy(level, pathsList[i], enemy)
