@@ -7,6 +7,7 @@ from Levels import levels
 from curses.textpad import rectangle
 
 enemiesList = ["!", "@", "%", "Z"]
+cursorValue = "O"
 levelMap = [
     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
@@ -24,6 +25,7 @@ levelMap = [
     [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
 ]
 
+# print screen function
 def printScreen(stdscr, cursorLoc):
     cyan = curses.color_pair(1)
     magenta = curses.color_pair(2)
@@ -45,6 +47,7 @@ def printScreen(stdscr, cursorLoc):
                 stdscr.addstr(i + 1, j + 1, "X", blackred | curses.A_BOLD)
             elif value in enemiesList:
                 stdscr.addstr(i + 1, j + 1, value, red | curses.A_BOLD)
+    stdscr.addstr(cursorLoc[0], cursorLoc[1], cursorValue, blackwhite)
     stdscr.refresh()
 
 # move cursor funciton
@@ -53,10 +56,25 @@ def moveCursor(stdscr, cursorLoc, direction):
         cursorLoc[0] -= 1
     elif direction == "down" and cursorLoc[0] < 14:
         cursorLoc[0] += 1
-    elif direction == "left" and cursorLoc[0] > 1:
+    elif direction == "left" and cursorLoc[1] > 1:
         cursorLoc[1] -= 1
-    elif direction == "right" and cursorLoc[0] < 28:
+    elif direction == "right" and cursorLoc[1] < 28:
         cursorLoc[1] += 1
+    printScreen(stdscr, cursorLoc)
+
+# change cursor function
+def changeCursor(stdscr, cursorLoc):
+    global cursorValue
+    cursors = ["O", "X", "▧", "!", "@", "%", "Z"]
+
+    for index, c in enumerate(cursors):
+        if c == cursorValue:
+            startIndex = index
+
+    endIndex = startIndex + 1
+    if startIndex == len(cursors) - 1:
+        endIndex = 0
+    cursorValue = cursors[endIndex]
     printScreen(stdscr, cursorLoc)
 
 # main function
@@ -71,16 +89,8 @@ def main(stdscr):
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.init_pair(7, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(8, curses.COLOR_WHITE, curses.COLOR_MAGENTA)
-    cyan = curses.color_pair(1)
-    magenta = curses.color_pair(2)
-    blackred = curses.color_pair(3)
-    blackwhite = curses.color_pair(4)
-    redmagenta = curses.color_pair(5)
-    white = curses.color_pair(6)
-    red = curses.color_pair(7)
-    whitemagenta = curses.color_pair(8)
 
-    cursorLoc = (1, 1)
+    cursorLoc = [1, 1]
     printScreen(stdscr, cursorLoc)
 
     key = stdscr.getch()
@@ -94,6 +104,8 @@ def main(stdscr):
             moveCursor(stdscr, cursorLoc, "left")
         elif key == curses.KEY_RIGHT:
             moveCursor(stdscr, cursorLoc, "right")
+        elif key == ord("n"):
+            changeCursor(stdscr, cursorLoc)
         elif key == 27:
             endProgram = True
         else:
