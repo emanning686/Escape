@@ -8,6 +8,7 @@ import copy
 import time
 from curses.textpad import rectangle
 from Levels import levels
+import subprocess
 
 # function to refresh the level using the screen config in printLevel
 def refreshLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode, pathsList):
@@ -240,6 +241,37 @@ def main(stdscr):
     stdscr.addstr(5, 6, "                    |_|         .", whitemagenta)
     stdscr.refresh()
     time.sleep(1)
+
+    stdscr.clear()
+    stdscr.addstr(1, 6, "Press", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(2, 12, "space", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(1, 18, "to", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(2, 21, "start", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(5, 6, "Press", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(4, 12, "E", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(5, 14, "to", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(4, 17, "edit", whitemagenta)
+    stdscr.refresh()
+    time.sleep(0.2)
+    stdscr.addstr(5, 22, "level", whitemagenta)
+    stdscr.refresh()
+
+    # Run the other script
+    subprocess.run(["python", "LevelEditor.py"])
 
     # variables that need to be initialized before the main loop
     levelStart = 0

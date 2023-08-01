@@ -8,21 +8,22 @@ from curses.textpad import rectangle
 
 enemiesList = ["!", "@", "%", "Z"]
 cursorValue = "O"
+wallCorner = [15, 30]
 levelMap = [
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "]
 ]
 
 # print screen function
@@ -36,17 +37,18 @@ def printScreen(stdscr, cursorLoc):
     red = curses.color_pair(7)
     whitemagenta = curses.color_pair(8)
     stdscr.clear()
-    rectangle(stdscr, 0, 0, 15, 30)
+    rectangle(stdscr, 0, 0, 15, 29)
     for i, row in enumerate(levelMap):
         for j, value in enumerate(row):
+            iPrintPos, jPrintPos = i + 1, j * 2 + 1
             if value == "O":
-                stdscr.addstr(i + 1, j + 1, "O", cyan)
-            elif value == "#":
-                stdscr.addstr(i + 1, j + 1, "▧", white)
+                stdscr.addstr(iPrintPos, jPrintPos, "O", cyan | curses.A_BOLD)
+            elif value == "#" or value == "9":
+                stdscr.addstr(iPrintPos, jPrintPos, "▧", white)
             elif value == "X":
-                stdscr.addstr(i + 1, j + 1, "X", blackred | curses.A_BOLD)
+                stdscr.addstr(iPrintPos, jPrintPos, "X", blackred | curses.A_BOLD)
             elif value in enemiesList:
-                stdscr.addstr(i + 1, j + 1, value, red | curses.A_BOLD)
+                stdscr.addstr(iPrintPos, jPrintPos, value, red | curses.A_BOLD)
     stdscr.addstr(cursorLoc[0], cursorLoc[1], cursorValue, blackwhite)
     stdscr.refresh()
 
@@ -57,25 +59,110 @@ def moveCursor(stdscr, cursorLoc, direction):
     elif direction == "down" and cursorLoc[0] < 14:
         cursorLoc[0] += 1
     elif direction == "left" and cursorLoc[1] > 1:
-        cursorLoc[1] -= 1
-    elif direction == "right" and cursorLoc[1] < 28:
-        cursorLoc[1] += 1
+        cursorLoc[1] -= 2
+    elif direction == "right" and cursorLoc[1] < 27:
+        cursorLoc[1] += 2
     printScreen(stdscr, cursorLoc)
 
 # change cursor function
-def changeCursor(stdscr, cursorLoc):
+def changeCursor(stdscr, cursorLoc, direction):
     global cursorValue
-    cursors = ["O", "X", "▧", "!", "@", "%", "Z"]
+    cursors = ["O", "X", "▧", "#", "!", "@", "%", "Z"]
 
     for index, c in enumerate(cursors):
         if c == cursorValue:
             startIndex = index
-
-    endIndex = startIndex + 1
-    if startIndex == len(cursors) - 1:
-        endIndex = 0
+    
+    if direction == "next":
+        endIndex = startIndex + 1
+        if startIndex == len(cursors) - 1:
+            endIndex = 0
+    elif direction == "previous":
+        endIndex = startIndex - 1
+        if startIndex == 0:
+            endIndex = len(cursors) - 1
+            
     cursorValue = cursors[endIndex]
     printScreen(stdscr, cursorLoc)
+
+# place item function
+def placeItem(stdscr, cursorLoc):
+    global levelmap, wallCorner
+
+    # wall item
+    if cursorValue == "▧":
+        wallCorner = [cursorLoc[0], cursorLoc[1]]
+        for i, row in enumerate(levelMap):
+            for j, value in enumerate(row):
+                if levelMap[i][j] == "#":
+                    levelMap[i][j] = " "
+                if i == cursorLoc[0] - 1 or j == int((cursorLoc[1] - 1) / 2):
+                    levelMap[i][j] = "#"
+                if i > cursorLoc[0] - 1 or j > int((cursorLoc[1] - 1) / 2):
+                    levelMap[i][j] = " "
+
+    # check if cursor within walls
+    if cursorLoc[0] < wallCorner[0] and cursorLoc[1] < wallCorner[1]:
+
+        # player item
+        if cursorValue == "O":
+            for i, row in enumerate(levelMap):
+                for j, value in enumerate(row):
+                    if levelMap[i][j] == "O":
+                        levelMap[i][j] = " "
+            levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = "O"
+
+        # inner wall item
+        if cursorValue == "#":
+            levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = "9"
+
+        # finish item
+        if cursorValue == "X":
+            for i, row in enumerate(levelMap):
+                for j, value in enumerate(row):
+                    if levelMap[i][j] == "X":
+                        levelMap[i][j] = " "
+            levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = "X"
+
+        # enemy 1 item
+        if cursorValue == "!":
+            for i, row in enumerate(levelMap):
+                for j, value in enumerate(row):
+                    if levelMap[i][j] == "!":
+                        levelMap[i][j] = " "
+            levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = "!"
+
+        # enemy 2 item
+        if cursorValue == "@":
+            for i, row in enumerate(levelMap):
+                for j, value in enumerate(row):
+                    if levelMap[i][j] == "@":
+                        levelMap[i][j] = " "
+            levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = "@"
+
+        # enemy 3 item
+        if cursorValue == "%":
+            for i, row in enumerate(levelMap):
+                for j, value in enumerate(row):
+                    if levelMap[i][j] == "%":
+                        levelMap[i][j] = " "
+            levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = "%"
+
+        # enemy 4 item
+        if cursorValue == "Z":
+            for i, row in enumerate(levelMap):
+                for j, value in enumerate(row):
+                    if levelMap[i][j] == "Z":
+                        levelMap[i][j] = " "
+            levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = "Z"
+
+    printScreen(stdscr, cursorLoc)
+
+# delete item function
+def delItem(stdscr, cursorLoc):
+    global levelmap, wallCorner
+    if cursorLoc[0] < wallCorner[0] and cursorLoc[1] < wallCorner[1]:
+        levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = " "
 
 # main function
 def main(stdscr):
@@ -105,9 +192,15 @@ def main(stdscr):
         elif key == curses.KEY_RIGHT:
             moveCursor(stdscr, cursorLoc, "right")
         elif key == ord("n"):
-            changeCursor(stdscr, cursorLoc)
+            changeCursor(stdscr, cursorLoc, "next")
+        elif key == ord("p"):
+            changeCursor(stdscr, cursorLoc, "previous")
+        elif key == ord(" "):
+            placeItem(stdscr, cursorLoc)
+        elif key == ord("d"):
+            delItem(stdscr, cursorLoc)
         elif key == 27:
-            endProgram = True
+            break
         else:
             continue
 
