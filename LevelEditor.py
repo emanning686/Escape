@@ -5,6 +5,7 @@ import curses
 from curses import wrapper
 from Levels import levels
 from curses.textpad import rectangle
+from subprocess import call
 
 enemiesList = ["!", "@", "%", "Z"]
 cursorValue = "O"
@@ -164,6 +165,24 @@ def delItem(stdscr, cursorLoc):
     if cursorLoc[0] < wallCorner[0] and cursorLoc[1] < wallCorner[1]:
         levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = " "
 
+# make level list function
+def makeLevelList(stdscr):
+    newLevelMap = list(levelMap)
+    wallCornerIndex = [wallCorner[0] - 1, wallCorner[1] / 2 - 1]
+    try:
+        for i, row in enumerate(newLevelMap):
+            if i >= wallCornerIndex[0]:
+                del newLevelMap[i:len(newLevelMap)]
+    except:
+        pass
+    try:
+        for i, row in enumerate(newLevelMap):
+            for j, value in enumerate(row):
+                if j >= wallCornerIndex[1]:
+                    del newLevelMap[j:len(newLevelMap)]
+    except:
+        pass
+
 # main function
 def main(stdscr):
 
@@ -199,6 +218,15 @@ def main(stdscr):
             placeItem(stdscr, cursorLoc)
         elif key == ord("d"):
             delItem(stdscr, cursorLoc)
+        elif key == ord("r"):
+
+            # Run the other script
+            call(["python", "Escape.py"])
+        elif key == ord("t"):
+            makeLevelList(stdscr)
+
+            # Run the other script
+            call(["python", "TestLevel.py"])
         elif key == 27:
             break
         else:

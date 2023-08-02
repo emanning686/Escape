@@ -176,12 +176,21 @@ def loseWindow(stdscr):
     stdscr.clear()
     stdscr.addstr(1, 6, "you lossed!", magenta)
     stdscr.refresh()
-    time.sleep(0.5)
-    stdscr.addstr(2, 6, "press space to play again", magenta)
+    time.sleep(1)
+    stdscr.addstr(2, 6, "Returning in", magenta)
     stdscr.refresh()
     time.sleep(0.5)
-    stdscr.addstr(3, 6, "or escape to quit", magenta)
+    stdscr.addstr(2, 19, "3", magenta)
     stdscr.refresh()
+    time.sleep(0.5)
+    stdscr.addstr(2, 21, "2", magenta)
+    stdscr.refresh()
+    time.sleep(0.5)
+    stdscr.addstr(2, 23, "1", magenta)
+    stdscr.refresh()
+    time.sleep(0.5)
+    # Run the other script
+    call(["python", "LevelEditor.py"])
 
 # function to display the window for if the player wins
 def winWindow(stdscr, movesList):
@@ -202,13 +211,21 @@ def winWindow(stdscr, movesList):
     if len(movesList) % 2 == 1:
         row += 1
     row += 1
-    time.sleep(0.5)
-    stdscr.addstr(row, 6, "press space to play again", magenta)
+    time.sleep(1)
+    stdscr.addstr(row, 6, "Returning in", magenta)
     stdscr.refresh()
-    row += 1
     time.sleep(0.5)
-    stdscr.addstr(row, 6, "or escape to quit", magenta)
+    stdscr.addstr(row, 19, "3", magenta)
     stdscr.refresh()
+    time.sleep(0.5)
+    stdscr.addstr(row, 21, "2", magenta)
+    stdscr.refresh()
+    time.sleep(0.5)
+    stdscr.addstr(row, 23, "1", magenta)
+    stdscr.refresh()
+    time.sleep(0.5)
+    # Run the other script
+    call(["python", "LevelEditor.py"])
 
 # main function
 def main(stdscr):
@@ -222,54 +239,6 @@ def main(stdscr):
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.init_pair(7, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(8, curses.COLOR_WHITE, curses.COLOR_MAGENTA)
-
-    # title screen 
-    whitemagenta = curses.color_pair(8)
-    stdscr.clear()
-    stdscr.addstr(1, 6, "  ___  ___  ___ __ _ _ __   ___..", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(2, 6, " / _ \/ __|/ __/ _` | '_ \ / _ \ ", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(3, 6, "|  __/\__ \ (_| (_| | |_) |  __/.", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(4, 6, " \___||___/\___\__,_| .__/ \___|.", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(5, 6, "                    |_|         .", whitemagenta)
-    stdscr.refresh()
-    time.sleep(1)
-
-    stdscr.clear()
-    stdscr.addstr(1, 6, "Press", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(2, 12, "space", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(1, 18, "to", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(2, 21, "start", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(5, 6, "Press", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(4, 12, "E", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(5, 14, "to", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(4, 17, "edit", whitemagenta)
-    stdscr.refresh()
-    time.sleep(0.2)
-    stdscr.addstr(5, 22, "level", whitemagenta)
-    stdscr.refresh()
-
     while True:
         homeInput = stdscr.getch()
         if homeInput == ord("e"):
