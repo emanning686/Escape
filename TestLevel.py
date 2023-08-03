@@ -7,8 +7,21 @@ import queue
 import copy
 import time
 from curses.textpad import rectangle
-from Levels import levels
 from subprocess import call
+import ast
+
+# creating levelMap
+levelMap = []
+with open('CurrentTestLevel.txt', 'r') as filehandle:
+    for line in filehandle:
+        currentPlace = line[:-1]
+        levelMap.append(currentPlace)
+
+for i, row in enumerate(levelMap):
+    levelMap[i] = ast.literal_eval(row)
+
+levels = []
+levels.append(levelMap)
 
 # function to refresh the level using the screen config in printLevel
 def refreshLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode, pathsList):
@@ -27,6 +40,7 @@ def printLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode, paths
     redmagenta = curses.color_pair(5)
     white = curses.color_pair(6)
     red = curses.color_pair(7)
+    blackyellow = curses.color_pair(9)
     topLeftFound = False
     for i, row in enumerate(level):
         for j, value in enumerate(row):
@@ -54,7 +68,7 @@ def printLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode, paths
         rectangle(stdscr, topLeftX, topLeftY, len(level), len(level[0]) * 2)
         stdscr.attroff(redmagenta)
     currentCol = len(level[0]) * 2 + 1
-    stdscr.addstr(1, currentCol + 1, "level: " + str(levelNum), blackwhite)
+    stdscr.addstr(1, currentCol + 1, "TEST LEVEL", blackyellow)
     stdscr.addstr(2, currentCol + 1, "moves: " + str(moves), blackwhite)
 
 # function to find the matrix location of a character, doesn't work with multiple, returns
@@ -174,7 +188,7 @@ def checkLose(level, player):
 def loseWindow(stdscr):
     magenta = curses.color_pair(2)
     stdscr.clear()
-    stdscr.addstr(1, 6, "you lossed!", magenta)
+    stdscr.addstr(1, 6, "you lost!", magenta)
     stdscr.refresh()
     time.sleep(1)
     stdscr.addstr(2, 6, "Returning in", magenta)
@@ -189,19 +203,18 @@ def loseWindow(stdscr):
     stdscr.addstr(2, 23, "1", magenta)
     stdscr.refresh()
     time.sleep(0.5)
-    # Run the other script
     call(["python", "LevelEditor.py"])
 
 # function to display the window for if the player wins
 def winWindow(stdscr, movesList):
     magenta = curses.color_pair(2)
     stdscr.clear()
-    stdscr.addstr(1, 6, "you escaped the final room!", magenta)
+    stdscr.addstr(1, 6, "you won!", magenta)
     stdscr.refresh()
     row = 3
     for i, moves in enumerate(movesList):
         time.sleep(0.5)
-        levelString = f"Level {str(i + 1)}: {str(moves).zfill(3)}"
+        levelString = f"Finished in: {str(moves).zfill(3)}"
         if i % 2 == 0:
             stdscr.addstr(row, 6, levelString, magenta)
         if i % 2 == 1:
@@ -224,7 +237,6 @@ def winWindow(stdscr, movesList):
     stdscr.addstr(row, 23, "1", magenta)
     stdscr.refresh()
     time.sleep(0.5)
-    # Run the other script
     call(["python", "LevelEditor.py"])
 
 # main function
@@ -239,18 +251,8 @@ def main(stdscr):
     curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
     curses.init_pair(7, curses.COLOR_RED, curses.COLOR_BLACK)
     curses.init_pair(8, curses.COLOR_WHITE, curses.COLOR_MAGENTA)
-    while True:
-        homeInput = stdscr.getch()
-        if homeInput == ord("e"):
-
-            # Run the other script
-            call(["python", "LevelEditor.py"])
-            
-        elif homeInput == ord(" "):
-            break
-        else:
-            continue
-
+    curses.init_pair(9, curses.COLOR_BLACK, curses.COLOR_YELLOW)
+    
     # variables that need to be initialized before the main loop
     levelStart = 0
     levelIndex = levelStart
@@ -321,7 +323,9 @@ def main(stdscr):
                         goodMove = movePlayer("left", level, player)
                     elif key == curses.KEY_RIGHT:
                         goodMove = movePlayer("right", level, player)
-                    elif key == 127:
+                    elif key == ord("r"):
+                        call(["python", "LevelEditor.py"])
+                    elif key == ord("0"):
                         rectangleMode = not rectangleMode
                     elif key == 27:
                         endProgram = True

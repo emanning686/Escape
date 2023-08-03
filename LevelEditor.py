@@ -6,26 +6,60 @@ from curses import wrapper
 from Levels import levels
 from curses.textpad import rectangle
 from subprocess import call
+import copy
+import ast
 
 enemiesList = ["!", "@", "%", "Z"]
 cursorValue = "O"
 wallCorner = [15, 30]
-levelMap = [
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "],
-    [" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "]
-]
+
+# create level map function
+def createLevelMap():
+    levelMap = []
+    with open('CurrentTestLevel.txt', 'r') as filehandle:
+        for line in filehandle:
+            currentPlace = line[:-1]
+            levelMap.append(currentPlace)
+
+    for i, row in enumerate(levelMap):
+        levelMap[i] = ast.literal_eval(row)
+
+    levelMap.pop(0)
+    levelMap.pop(len(levelMap) - 1)
+
+    for i in levelMap:
+        i.pop(len(i) - 1)
+        i.pop(0)
+
+    horWall = len(levelMap)
+    vertWall = len(levelMap[0])
+
+    while True:
+        if len(levelMap[0]) < 14:
+            for i in levelMap:
+                i.append(" ")
+        else:
+            break
+
+    while True:
+        if len(levelMap) < 14:
+            levelMap.append([" ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " "])
+        else:
+            break
+
+    for i, row in enumerate(levelMap):
+        for j, value in enumerate(row):
+            if value == "#":
+                levelMap[i][j] = "9"
+            if i == horWall and j <= vertWall:
+                levelMap[i][j] = "#"
+            if j == vertWall and i <= horWall:
+                levelMap[i][j] = "#"
+
+    newWallCorner = [horWall + 1, vertWall * 2 + 1]
+    return levelMap, newWallCorner
+
+levelMap, wallCorner = createLevelMap()
 
 # print screen function
 def printScreen(stdscr, cursorLoc):
@@ -166,22 +200,73 @@ def delItem(stdscr, cursorLoc):
         levelMap[cursorLoc[0] - 1][int((cursorLoc[1] - 1) / 2)] = " "
 
 # make level list function
-def makeLevelList(stdscr):
-    newLevelMap = list(levelMap)
+def makeLevelList():
+    newLevelMap = copy.deepcopy(levelMap)
     wallCornerIndex = [wallCorner[0] - 1, wallCorner[1] / 2 - 1]
-    try:
-        for i, row in enumerate(newLevelMap):
-            if i >= wallCornerIndex[0]:
-                del newLevelMap[i:len(newLevelMap)]
-    except:
-        pass
-    try:
-        for i, row in enumerate(newLevelMap):
-            for j, value in enumerate(row):
-                if j >= wallCornerIndex[1]:
-                    del newLevelMap[j:len(newLevelMap)]
-    except:
-        pass
+
+    for i, row in enumerate(newLevelMap):
+        if i >= wallCornerIndex[0]:
+            del newLevelMap[i:len(newLevelMap)]
+            
+    for i, row in enumerate(newLevelMap):
+        for j, value in enumerate(row):
+            if j >= wallCornerIndex[1]:
+                del newLevelMap[i][j:len(newLevelMap[i])]
+
+    newLevelMap.insert(0, [])
+    for i in range(len(newLevelMap[1])):
+        newLevelMap[0].append("#")
+
+    newLevelMap.insert(len(newLevelMap), [])
+    for i in range(len(newLevelMap[1])):
+        newLevelMap[len(newLevelMap) - 1].append("#")
+
+    for i in newLevelMap:
+        i.insert(0, "#")
+        i.append("#")
+
+    for i, row in enumerate(newLevelMap):
+        for j, value in enumerate(row):
+            if value == "9":
+                newLevelMap[i][j] = "#"
+
+    return newLevelMap
+
+# format level function
+def exportLevel():
+    formattedLevel = makeLevelList()
+    with open('CurrentTestLevel.txt', 'w') as file:
+        for i in formattedLevel:
+            file.write(f'{i}\n')
+
+# test level function
+def testLevel():
+    exportLevel()
+    call(["python", "TestLevel.py"])
+
+# add to game function
+def addToGame():
+    exportLevel()
+    levelList = makeLevelList()
+
+    levelFormatted = "["
+
+    for i, row in enumerate(levelList):
+        levelFormatted += "["
+        for j, value in enumerate(row):
+            if j == len(row) - 1:
+                levelFormatted += f'"{value}"'
+            else:
+                levelFormatted += f'"{value}", '
+        if i == len(levelList) - 1:
+            levelFormatted += "]"
+        else:
+            levelFormatted += "], "
+
+    levelFormatted += "]"
+
+    with open('Levels.txt', 'a') as file:
+        file.write(f'{levelFormatted}\n')
 
 # main function
 def main(stdscr):
@@ -219,14 +304,13 @@ def main(stdscr):
         elif key == ord("d"):
             delItem(stdscr, cursorLoc)
         elif key == ord("r"):
-
-            # Run the other script
             call(["python", "Escape.py"])
         elif key == ord("t"):
-            makeLevelList(stdscr)
-
-            # Run the other script
-            call(["python", "TestLevel.py"])
+            testLevel()
+        elif key == ord("s"):
+            exportLevel()
+        elif key == ord("a"):
+            addToGame()
         elif key == 27:
             break
         else:

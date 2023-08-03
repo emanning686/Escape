@@ -7,8 +7,18 @@ import queue
 import copy
 import time
 from curses.textpad import rectangle
-from Levels import levels
 from subprocess import call
+import ast
+
+# create levels list from file
+levels = []
+with open('Levels.txt', 'r') as filehandle:
+    for line in filehandle:
+        currentPlace = line[:-1]
+        levels.append(currentPlace)
+
+for i, row in enumerate(levels):
+    levels[i] = ast.literal_eval(row)
 
 # function to refresh the level using the screen config in printLevel
 def refreshLevel(level, stdscr, enemiesList, levelNum, moves, rectangleMode, pathsList):
@@ -174,7 +184,7 @@ def checkLose(level, player):
 def loseWindow(stdscr):
     magenta = curses.color_pair(2)
     stdscr.clear()
-    stdscr.addstr(1, 6, "you lossed!", magenta)
+    stdscr.addstr(1, 6, "you lost!", magenta)
     stdscr.refresh()
     time.sleep(0.5)
     stdscr.addstr(2, 6, "press space to play again", magenta)
@@ -273,8 +283,6 @@ def main(stdscr):
     while True:
         homeInput = stdscr.getch()
         if homeInput == ord("e"):
-
-            # Run the other script
             call(["python", "LevelEditor.py"])
             
         elif homeInput == ord(" "):
@@ -352,7 +360,7 @@ def main(stdscr):
                         goodMove = movePlayer("left", level, player)
                     elif key == curses.KEY_RIGHT:
                         goodMove = movePlayer("right", level, player)
-                    elif key == 127:
+                    elif key == ord("0"):
                         rectangleMode = not rectangleMode
                     elif key == 27:
                         endProgram = True
